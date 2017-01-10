@@ -29,8 +29,8 @@ WITH cteDrugTarget(drug_exposure_id, person_id, ingredient_concept_id, unit_conc
 	FROM <schema>.drug_exposure d
 	     JOIN <vocabulary_schema>.concept_ancestor ca ON ca.descendant_concept_id = d.drug_concept_id
 	     JOIN <vocabulary_schema>.concept c ON ca.ancestor_concept_id = c.concept_id
-	     WHERE c.vocabulary_id = 8
-	     AND c.concept_class = 'Ingredient'
+	     WHERE c.vocabulary_id = 'RxNorm'
+	     AND c.concept_class_id = 'Ingredient'
 	     /* Depending on the needs of your data, you can put more filters on to your code. We assign 0 to unmapped drug_concept_id's, and we found data where days_supply was negative.
 	      * We don't want different drugs put in the same era, so the code below shows how we filtered them out.
 	      * We also don't want negative days_supply, because that will pull our end_date before the start_date due to our second parameter in the COALESCE function.
@@ -67,7 +67,7 @@ WITH cteDrugTarget(drug_exposure_id, person_id, ingredient_concept_id, unit_conc
 				, unit_concept_id
 				, dose_value
 				, drug_exposure_start_date AS event_date
-				, -1 AS event_type, ROW_NUMBER() OVER(PARTITION BY person_id, drug_concept_id, dose_unit_concept_id, effective_drug_dose ORDER BY drug_exposure_start_date) AS start_ordinal
+				, -1 AS event_type, ROW_NUMBER() OVER(PARTITION BY person_id, ingredient_concept_id, unit_concept_id ORDER BY drug_exposure_start_date) AS start_ordinal
 			FROM cteDrugTarget
 
 			UNION ALL
